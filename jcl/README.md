@@ -1,0 +1,60 @@
+# UCF on z/OS: VSAM JCL
+
+Before running anything, swap the dummy site values listed in [PLACEHOLDERS.md](PLACEHOLDERS.md).
+
+## Run order
+
+| When | Job | What it does |
+|---|---|---|
+| Once | **UCFCOMP** | Compiles and links UCFSNDX (Soundex routine), UCFSDXB (Soundex builder) and UCFCTLU (UCF.CTL stamper). Source is in `../cobol/`, copybooks in `../design/copybooks/` |
+| Once | **UCFCLDEF** | Defines the claims files (700-byte header, items, audit ESDS, UCF.CTL counter) and their three alternate indexes and paths. It seeds one record in each, which programs skip, and **never deletes**, because claims data can't be reloaded |
+| Once | **UCFFMDEF** | Allocates `HLQ.UCF.FORMS` (PDSE, VB 255, where UCFFORM writes one FDF member per claim) and `HLQ.UCF.PARMLIB`, seeded with member DESIGNEE (your firm for forms 53-125/53-126, as placeholder values to edit in ISPF). Never deletes |
+| Each new tape | **UCFDEF** | Deletes and redefines the owner KSDS, its PropertyID alternate index and the path |
+| Each new tape | **UCFLOAD** | Loads the tape, builds the PropertyID index, and stamps `LOADSTAT` in UCF.CTL |
+| Each new tape | **UCFLOOK** | Rebuilds the holder-name and owner-ZIP lookup files from the owner KSDS, and stamps `HOLDSTAT`/`ZIPSTAT` |
+| Optional | **UCFSDX** | Rebuilds the Soundex ("sounds like") lookup file and stamps `SNDXSTAT`. Nothing depends on it: Query refuses sounds-like searches when it's missing or older than `LOADSTAT` |
+| Any time | **UCFFIND** | Sample IDCAMS lookups |
+
+The steps that stamp UCF.CTL need UCFCLDEF to have run once, and UCF.CTL must be closed in CICS while they run. Close the owner and lookup files in CICS before any reload.
+
+## Lookup files
+
+Alternate indexes can't serve holder name or ZIP: one AIX record holds about 550 base keys at most, and ZIP `00000` or a large holder has far more. Each lookup KSDS instead has one small record per owner record. A search does a generic browse, then reads the owner record by the 66-byte key in the lookup record.
+
+| File | Record | Key | Left out |
+|---|---|---|---|
+| `HLQ.OWNER.HOLDLKP` | HolderName 40 + owner key 66 = 106 | all 106 bytes | blank holder names |
+| `HLQ.OWNER.ZIPLKP` | OwnerZip 9 + owner key 66 + PropertyTypeCode 4 = 79 | first 75 bytes | ZIP `00000` or blank (unknown) |
+| `HLQ.OWNER.SNDXLKP` | Soundex(OwnerLastName) 4 + owner key 66 = 70 | all 70 bytes | names with no letters |
+
+Last-name search needs no lookup, because last name leads the owner key. Property type + ZIP filters on the type code kept in the ZIP lookup record, without reading the owner file.
+
+## UCF.CTL build records (written by UCFCTLU)
+
+`LOADSTAT`, `HOLDSTAT`, `ZIPSTAT` and `SNDXSTAT` share one layout: CT-REC-ID, CT-LAST-CLAIM-ID zeros, CT-LAST-UPD-DATE, CT-LAST-UPD-USER `BATCH`, and in CT-DATA the dataset name X(44), build date 9(8) YYYYMMDD, time 9(6) HHMMSS and 8 spare bytes. `CLAIMNO` is never touched by batch.
+
+## Why the record is 535 bytes, not 469
+
+Jake chose the key: last name + property ID. A KSDS key has to be one contiguous run of bytes, but OwnerLastName is in tape bytes 1–40 and the property ID is in bytes 202–227. The load step copies both to the front of each record:
+
+| Bytes (1-based) | Content |
+|---|---|
+| 1–40 | OwnerLastName (key) |
+| 41–66 | Property ID (key): HolderIDNumber 12 + HolderReportYear 4 + PropertyTypeCode 4 + SequenceNumber 6 |
+| 67–535 | the original 469-byte record, unchanged. Every field from LAYOUT.md is at its tape position + 66 |
+
+`KEYS(66 0)`. A last-name search is a generic-key read (`START`/`KEYLEN`, or IDCAMS `FROMKEY(SMITH) TOKEY(SMITH)`).
+
+Property-ID-only searches go through the alternate index `KEYS(26 267)` (267 = 66 + 201) and its PATH. A 12-byte holder ID used as a generic key lists that holder's properties. The index is `NONUNIQUEKEY` because a property ID can repeat across owners: FIRST CITY BANK has `7405044850011989AC01000001` under two owners in the sample.
+
+NRFlag is left out of the key in case it changes between tapes.
+
+There is no add-on status byte: Jake decided (2026-10-14) that claim status is worked out from the record's dates.
+
+## Things to confirm on your system
+
+- **Duplicates:** a KSDS can't store two records with the same key. The load keeps the first record for each key and writes the rest to `HLQ.OWNER.DUPKEYS`. Its count appears in TOOLMSG.
+- **Blank or repeated PropertyIDs:** if thousands of records share one PropertyID, that alternate-index record can grow past `RECORDSIZE(97 32000)` and BLDINDEX fails. Check the DUPKEYS count and the data first.
+- **Space:** the defines are sized for roughly 10 million records. A base cluster over 4 GB needs an SMS data class with extended addressability; the `DATACLAS` lines are commented out.
+- **Tape format:** the load assumes a standard-label, RECFM=FB, LRECL=469 EBCDIC tape. An unlabeled tape needs `LABEL=(1,NL)` and a DCB. A variable-length (RECFM=VB) tape needs different INREC positions.
+- **Testing:** these jobs have not been run on a mainframe.

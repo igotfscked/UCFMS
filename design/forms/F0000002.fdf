@@ -1,0 +1,22 @@
+%FDF-1.2
+1 0 obj
+<< /FDF << /F (53-120.pdf)
+/Fields [
+<< /T (F120_ClaimID1) /V () >>
+<< /T (F120_ClaimID2) /V () >>
+<< /T (F120_LastName) /V (A & T CATTLE CO) >>
+<< /T (F120_FirstName) /V () >>
+<< /T (F120_MiddleName) /V () >>
+<< /T (F120_MaidenName) /V () >>
+<< /T (F120_MailAddr) /V (PO BOX 118) >>
+<< /T (F120_DayPhone) /V (806-555-0144) >>
+<< /T (F120_City) /V (DUMAS) >>
+<< /T (F120_State) /V (TX) >>
+<< /T (F120_ZIP) /V (79029-0118) >>
+<< /T (F120_Email) /V () >>
+<< /T (F120_FAX) /V (806-555-0145) >>
+] >> >>
+endobj
+trailer
+<< /Root 1 0 R >>
+%%EOF

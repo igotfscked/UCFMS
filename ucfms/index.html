@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Texas UCF Search</title>
+<style>
+  :root { --bg:#f7f7f5; --panel:#fff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dc; --accent:#1f5fa8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161615; --panel:#1f1f1d; --text:#ececea; --muted:#a3a39d; --line:#33332f; --accent:#7fb0ec; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.4 system-ui, sans-serif; }
+  main { max-width:1200px; margin:0 auto; padding:16px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin-bottom:12px; }
+  form { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px;
+         display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; }
+  label { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); }
+  input, select { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:6px;
+                  background:var(--bg); color:var(--text); }
+  .actions { display:flex; gap:8px; align-items:end; }
+  button, a.btn { font:inherit; padding:7px 14px; border-radius:6px; border:1px solid var(--accent);
+                  background:var(--accent); color:#fff; cursor:pointer; text-decoration:none; }
+  button.secondary, a.btn { background:transparent; color:var(--accent); }
+  .bar { display:flex; justify-content:space-between; align-items:center; margin:12px 0 6px; gap:8px; flex-wrap:wrap; }
+  .wrap { overflow-x:auto; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+  table { border-collapse:collapse; width:100%; }
+  th, td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; }
+  th { font-size:12px; color:var(--muted); font-weight:600; }
+  td.num { text-align:right; font-variant-numeric: tabular-nums; }
+  tr:hover td { background:color-mix(in srgb, var(--accent) 8%, transparent); cursor:pointer; }
+  .err { color:#c0392b; }
+  dialog { border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--text); max-width:700px; width:95%; }
+  dialog dl { display:grid; grid-template-columns:max-content 1fr; gap:3px 12px; margin:0; }
+  dialog dt { color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Texas Unclaimed Property Search</h1>
+  <div class="sub" id="meta">Loading…</div>
+  <form id="f">
+    <label>Owner last name / business (starts with)<input name="owner_last"></label>
+    <label>Owner first name (starts with)<input name="owner_first"></label>
+    <label>Owner name words (any order)<input name="owner_name_words" placeholder="e.g. acme oil"></label>
+    <label>Holder name (starts with)<input name="holder"></label>
+    <label>Holder name words<input name="holder_words" placeholder="e.g. bank america"></label>
+    <label>Owner ZIP (3, 5 or 9 digits)<input name="zip" inputmode="numeric"></label>
+    <label>Owner city (starts with)<input name="city"></label>
+    <label>Owner state<input name="state" maxlength="2"></label>
+    <label>Property type code<select name="property_type"><option value="">Any</option></select></label>
+    <label>Property ID (starts with)<input name="property_id" placeholder="holder ID + year + type + seq"></label>
+    <label>Holder report year<input name="report_year" inputmode="numeric" maxlength="4"></label>
+    <label>Minimum amount ($)<input name="min_amount" inputmode="decimal"></label>
+    <label>Sort by<select name="sort">
+      <option value="name">Owner name</option><option value="amount">Amount (high first)</option>
+      <option value="holder">Holder</option><option value="zip">ZIP</option></select></label>
+    <div class="actions"><button>Search</button><button type="reset" class="secondary">Clear</button></div>
+  </form>
+  <div class="bar"><span id="count"></span>
+    <span><button class="secondary" id="prev">Previous</button> <button class="secondary" id="next">Next</button>
+    <a class="btn" id="csv" href="#">Export CSV</a></span></div>
+  <div class="wrap"><table><thead><tr>
+    <th>Owner</th><th>Address</th><th>City</th><th>ST</th><th>ZIP</th><th>Property type</th>
+    <th>Amount</th><th>Shares</th><th>Holder</th><th>Year</th><th>NR flag</th></tr></thead><tbody id="rows"></tbody></table></div>
+</main>
+<dialog id="dlg"><dl id="detail"></dl><p><button onclick="dlg.close()">Close</button></p></dialog>
+<script>
+const PAGE = 50; let offset = 0, total = 0;
+const f = document.getElementById('f'), $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money = v => v == null ? '' : v.toLocaleString(undefined, {style:'currency', currency:'USD'});
+function params() {
+  const p = new URLSearchParams();
+  for (const [k, v] of new FormData(f)) if (v.trim()) p.set(k, v.trim());
+  return p;
+}
+async function run() {
+  const p = params(); p.set('limit', PAGE); p.set('offset', offset);
+  $('csv').href = '/api/export.csv?' + params();
+  const r = await fetch('/api/search?' + p); const j = await r.json();
+  if (!r.ok) { $('count').innerHTML = `<span class="err">${esc(j.error)}</span>`; $('rows').innerHTML=''; return; }
+  total = j.total;
+  $('count').textContent = total ? `${(offset+1).toLocaleString()}–${Math.min(offset+PAGE,total).toLocaleString()} of ${total.toLocaleString()} records` : 'No matching records';
+  $('rows').innerHTML = j.rows.map(x => `<tr data-id="${x.id}">
+    <td>${esc(x.OwnerLastName)}${x.OwnerFirstName ? ', ' + esc(x.OwnerFirstName) : ''}</td>
+    <td>${esc(x.OwnerAddressLine1)}</td><td>${esc(x.OwnerCity)}</td><td>${esc(x.OwnerState)}</td>
+    <td>${esc(x.OwnerZipCode)}</td><td title="${esc(x.PropertyTypeDescription)}">${esc(x.PropertyTypeCode)} ${esc(x.PropertyTypeDescription)}</td>
+    <td class="num">${money(x.amount)}</td><td class="num">${esc(x.NumberOfShares)}</td>
+    <td>${esc(x.HolderName)}</td><td>${esc(x.HolderReportYear)}</td><td title="${esc(x.NRFlagDescription)}">${esc(x.NRFlag)} ${esc(x.NRFlagDescription)}</td></tr>`).join('');
+  $('prev').disabled = offset === 0; $('next').disabled = offset + PAGE >= total;
+}
+f.onsubmit = e => { e.preventDefault(); offset = 0; run(); };
+$('prev').onclick = () => { offset = Math.max(0, offset - PAGE); run(); };
+$('next').onclick = () => { offset += PAGE; run(); };
+$('rows').onclick = async e => {
+  const tr = e.target.closest('tr'); if (!tr) return;
+  const rec = await (await fetch('/api/record?id=' + tr.dataset.id)).json();
+  $('detail').innerHTML = Object.entries(rec).filter(([k, v]) => v !== '' && v != null && !/_u$|zip5$/.test(k))
+    .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+  $('dlg').showModal();
+};
+fetch('/api/meta').then(r => r.json()).then(m => {
+  $('meta').textContent = `${m.records.toLocaleString()} records loaded. Name filters match from the start of the name; "words" filters match whole words in any order.`;
+  const sel = f.property_type;
+  m.property_types.forEach(t => sel.add(new Option(`${t.code}  ${t.description}${t.in_data ? '' : ' (none loaded)'}`, t.code)));
+});
+</script>
+</body>
+</html>

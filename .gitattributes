@@ -1,0 +1,10 @@
+# Fixed-width record files: keep bytes exactly as delivered (CRLF, 469-byte lines)
+sample/*.txt -text
+# Mainframe source: LF in the repo
+*.jcl text eol=lf
+*.cbl text eol=lf
+*.cpy text eol=lf
+# Binary
+*.pdf binary
+*.png binary
+*.fdf binary

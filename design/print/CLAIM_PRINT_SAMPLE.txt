@@ -1,0 +1,15 @@
+1UCFMS  CLAIM PACKAGE                            TEXAS UNCLAIMED PROPERTY                            RUN 11/02/2026 14:05   PAGE    1
+ UCFCLPRT                                                                                                                USER JSMITH 
+0CLAIM ID   0000000001      STATUS  CLOSED    OPENED 10/14/2026 JSMITH    SUBMITTED 10/14/2026 JSMITH    CLOSED 11/02/2026 JSMITH    
+ COMPTROLLER REF  (none)                CLOSING NOTE  COMPTROLLER PAID IN FULL                                                       
+0CLAIMANT   ABBOTT, ALBERT L                        RELATIONSHIP  OWNER                                                              
+            4417 WOODLAWN AVE                                                                                                        
+            TEXARKANA TX 75503                      PHONE  903-555-0187    EMAIL  (none)                                             
+0SEQ  OWNER NAME             PROPERTY ID                TYPE DESCRIPTION        HOLDER                         REPORT DT    AMOUNT   
+ ---- ---------------------- -------------------------- ---- ------------------ ------------------------------ ---------- --------   
+ 0001 ABBOT ALBERT L         2331026550012009MI02000018 MI02 MINERAL ROYALTY    SUNOCO PARTNERS MKTG & TERMINA 12/01/2009     0.03   
+ 0002 ABBOT ALBERT L         2331026550012009MI02000019 MI02 MINERAL ROYALTY    SUNOCO PARTNERS MKTG & TERMINA 12/01/2009     0.04   
+                                                                                                                          --------   
+                                                                                        ACTIVE ITEMS    2      CLAIM TOTAL     0.07  
+0AMOUNTS ARE THE COMPTROLLER'S DOLLARAMOUNT FOR EACH ACTIVE ITEM. REMOVED ITEMS ARE NOT PRINTED (PARM ITEMS=ALL PRINTS THEM).        
+-*** END OF CLAIM 0000000001 ***                                                                                                     
