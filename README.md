@@ -43,7 +43,7 @@ The project has two tracks:
 | [cobol/](cobol/) | Batch COBOL: Soundex routine and builder, control-file stamper |
 | [design/](design/) | Application design ([APP_DESIGN.md](design/APP_DESIGN.md)), screen mockups ([SCREENS.md](design/SCREENS.md)), claims file layout ([CLAIMS_LAYOUT.md](design/CLAIMS_LAYOUT.md)) |
 | [design/copybooks/](design/copybooks/) | COBOL copybooks for the claims and control files |
-| [design/forms/](design/forms/) | Comptroller forms 53-120, 53-125, 53-126, the FDF field map ([FORMS.md](design/forms/FORMS.md)), sample FDFs and filled PDFs |
+| [design/forms/](design/forms/) | Comptroller forms 53-120, 53-125, 53-126 and the Affidavit of Heirship 53-111-A, the FDF field map ([FORMS.md](design/forms/FORMS.md)), sample FDFs and filled PDFs |
 | [design/print/](design/print/) | Sample 133-byte claim print package |
 | [design/walkthrough/](design/walkthrough/) | Generator for the interactive design walkthrough page |
 
