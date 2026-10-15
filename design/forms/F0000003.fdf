@@ -1,0 +1,22 @@
+%FDF-1.2
+1 0 obj
+<< /FDF << /F (53-120.pdf)
+/Fields [
+<< /T (F120_ClaimID1) /V () >>
+<< /T (F120_ClaimID2) /V () >>
+<< /T (F120_LastName) /V (ABBIT) >>
+<< /T (F120_FirstName) /V (LINDA) >>
+<< /T (F120_MiddleName) /V (M) >>
+<< /T (F120_MaidenName) /V () >>
+<< /T (F120_MailAddr) /V (210 PECAN ST) >>
+<< /T (F120_DayPhone) /V (936-555-0122) >>
+<< /T (F120_City) /V (NACOGDOCHES) >>
+<< /T (F120_State) /V (TX) >>
+<< /T (F120_ZIP) /V (75961) >>
+<< /T (F120_Email) /V () >>
+<< /T (F120_FAX) /V () >>
+] >> >>
+endobj
+trailer
+<< /Root 1 0 R >>
+%%EOF

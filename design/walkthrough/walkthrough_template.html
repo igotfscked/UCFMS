@@ -1,0 +1,277 @@
+<title>UCFMS Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a 3270 terminal on the left as the stage, the narrated step beside it; stacks on phones. */
+:root {
+  --bg: #eef1ee; --surface: #f8faf8; --fg: #16201a; --muted: #56635b; --line: #cdd6cf;
+  --accent: #0b6e4f; --accent-fg: #ffffff; --key: #e2e8e3;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  /* terminal phosphor, same in both themes */
+  --t-bg: #040806; --t-bezel: #1b221e; --t-bezel-edge: #2c3631; --t-txt: #35d977; --t-title: #e9f2ec;
+  --t-in: #5fd3e6; --t-msg: #f2d35c; --t-pf: #7fb2ff; --t-hl-bg: #f2d35c; --t-hl-fg: #08110c; --t-label: #9fb0a6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1210; --surface: #141b17; --fg: #e2e9e4; --muted: #96a59c; --line: #27322c;
+    --accent: #4fd18b; --accent-fg: #06110b; --key: #1f2924; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1210; --surface: #141b17; --fg: #e2e9e4; --muted: #96a59c; --line: #27322c;
+  --accent: #4fd18b; --accent-fg: #06110b; --key: #1f2924; color-scheme: dark;
+}
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap {
+  max-width: 1320px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+h1 { font-family: var(--font-head); font-weight: 600; font-size: 1.75rem; line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: .01em; }
+.sub { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; padding: 3px; background: var(--surface); gap: 2px; }
+.seg button { font: 600 .8rem/1 var(--font-mono); letter-spacing: .06em; border: 0; background: transparent; color: var(--muted); padding: 8px 14px; border-radius: 6px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+
+.bezel { background: var(--t-bezel); border: 1px solid var(--t-bezel-edge); border-radius: 14px; padding: 12px 14px 10px; min-width: 0; }
+.bezel-top { display: flex; justify-content: space-between; gap: 12px; font: 500 .72rem/1 var(--font-mono); color: var(--t-label); letter-spacing: .08em; text-transform: uppercase; padding: 0 2px 9px; }
+.screen-box { container-type: inline-size; background: var(--t-bg); border-radius: 6px; padding: 1.4% 1.6%; box-shadow: inset 0 0 40px rgba(53, 217, 119, .06); }
+pre.screen { margin: 0; font-family: var(--font-mono); font-size: calc(100cqw / 48.2); line-height: 1.28; color: var(--t-txt); white-space: pre; overflow: hidden; text-shadow: 0 0 .35em rgba(53, 217, 119, .25); }
+.screen .r-title { color: var(--t-title); }
+.screen .r-msg { color: var(--t-msg); }
+.screen .r-pf { color: var(--t-pf); }
+.screen .in { color: var(--t-in); }
+.screen .hl { background: var(--t-hl-bg); color: var(--t-hl-fg); text-shadow: none; border-radius: 1px; }
+.screen .hl.fresh { animation: pulse 1.2s ease-out 1; }
+.screen .cur { background: var(--t-txt); color: var(--t-bg); animation: blink 1s steps(1) infinite; text-shadow: none; }
+@keyframes blink { 50% { background: transparent; color: inherit; } }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(242, 211, 92, .8); } 100% { box-shadow: 0 0 0 .6em rgba(242, 211, 92, 0); } }
+.bezel-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 2px 0; font: 500 .72rem/1 var(--font-mono); color: var(--t-label); letter-spacing: .06em; }
+.keycap { display: inline-flex; align-items: center; gap: 8px; }
+.keycap kbd { font: 600 .78rem/1 var(--font-mono); color: var(--t-title); border: 1px solid #4a5a51; border-bottom-width: 3px; border-radius: 5px; padding: 5px 9px; background: #232c27; transition: transform .08s, border-bottom-width .08s; }
+.keycap kbd.press { transform: translateY(2px); border-bottom-width: 1px; background: #33ff8a33; }
+
+aside.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.eyebrow { font: 600 .74rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); display: flex; justify-content: space-between; gap: 8px; }
+.eyebrow span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+.caption { font-size: 1.02rem; line-height: 1.55; margin: 0; min-height: 7.5em; }
+.note { margin: 0; font-size: .88rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; }
+.note b { font: 600 .72rem/1 var(--font-mono); letter-spacing: .08em; color: var(--fg); margin-right: 6px; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.controls button { font: 500 .9rem/1 var(--font-body); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.controls button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); min-width: 6.5em; justify-content: center; }
+.controls button:disabled { opacity: .4; cursor: default; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { font-size: .78rem; color: var(--muted); margin: 0; }
+
+.timeline { display: flex; flex-direction: column; gap: 8px; }
+.chapters { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.chapters button { border: 0; background: none; padding: 2px 0; font: 600 .78rem/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); cursor: pointer; }
+.chapters button.on { color: var(--accent); }
+.ticks { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 3px; }
+.ticks button { height: 8px; border: 0; padding: 0; border-radius: 2px; background: var(--line); cursor: pointer; }
+.ticks button.done { background: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.ticks button.now { background: var(--accent); }
+.ticks button.gap { margin-left: 6px; }
+footer { color: var(--muted); font-size: .82rem; max-width: 80ch; }
+@media (prefers-reduced-motion: reduce) {
+  .screen .cur, .screen .hl.fresh, .keycap kbd { animation: none; transition: none; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>UCFMS Walkthrough</h1>
+      <p class="sub">One claim from search to close, then reports and a data reload, on the 24 × 80 screens from the design. Records are real 2009 Comptroller data.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Front end">
+      <button id="m-ispf" aria-pressed="true">ISPF</button>
+      <button id="m-cics" aria-pressed="false">CICS</button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="bezel">
+      <div class="bezel-top"><span id="panel-id">UCFP000</span><span id="mode-label">TSO / ISPF · 3270 model 2</span></div>
+      <div class="screen-box"><pre class="screen" id="screen" aria-live="polite"></pre></div>
+      <div class="bezel-bottom">
+        <span class="keycap">Key <kbd id="key">Enter</kbd></span>
+        <span id="cursor-pos">24 × 80</span>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="eyebrow"><span id="chapter">Sign on</span><span id="count">1 / 1</span></div>
+      <p class="caption" id="caption"></p>
+      <p class="note" id="note" hidden></p>
+      <div class="controls">
+        <button id="back" aria-label="Previous step">◀ Back</button>
+        <button id="play" class="primary">▶ Play</button>
+        <button id="next" aria-label="Next step">Next ▶</button>
+      </div>
+      <p class="hint">Arrow keys step, space plays or pauses.</p>
+    </aside>
+  </div>
+
+  <div class="timeline">
+    <div class="chapters" id="chapters"></div>
+    <div class="ticks" id="ticks"></div>
+  </div>
+
+  <footer>Owner records are from the 2009 sample tape (ABBOT, ABBIT, ABBITT). Claimant contact details, claim notes, user IDs, dataset names and job numbers are examples. Amounts are stored in implied cents, so 0000000003 shows as 0.03.</footer>
+</div>
+
+<script>
+const STEPS = /*__STEPS__*/[];
+const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let mode = "ispf";
+try { const m = localStorage.getItem("ucfms-mode"); if (m === "ispf" || m === "cics") mode = m; } catch (e) {}
+let idx = 0, playing = false, timers = [];
+const $ = (id) => document.getElementById(id);
+
+function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+function typedCells(marks) {
+  const cells = [];
+  marks.forEach((m) => { if (m.k === "type") for (let i = 0; i < m.n; i++) cells.push([m.r, m.c + i]); });
+  return cells;
+}
+
+function esc(ch) { return ch === "<" ? "&lt;" : ch === ">" ? "&gt;" : ch === "&" ? "&amp;" : ch; }
+
+function render(step, typed, showHl, freshHl) {
+  const v = step[mode];
+  const cells = typedCells(v.marks);
+  const pending = new Set(cells.slice(typed).map(([r, c]) => r * 80 + c));
+  const typeSet = new Set(cells.map(([r, c]) => r * 80 + c));
+  const hl = new Set();
+  if (showHl) v.marks.forEach((m) => { if (m.k === "hl") for (let i = 0; i < m.n; i++) hl.add(m.r * 80 + m.c + i); });
+  const cur = typed < cells.length ? cells[typed][0] * 80 + cells[typed][1] : -1;
+  let html = "";
+  v.grid.forEach((line, r) => {
+    const rowCls = r === 0 ? "r-title" : r === 22 ? "r-msg" : r === 23 ? "r-pf" : "";
+    let out = "", cls = null, buf = "";
+    for (let c = 0; c < 80; c++) {
+      const k = r * 80 + c;
+      let ch = line[c];
+      const parts = [];
+      if (pending.has(k)) ch = "_";
+      if (ch === "_" || typeSet.has(k)) parts.push("in");
+      if (hl.has(k)) parts.push(freshHl ? "hl fresh" : "hl");
+      if (k === cur) parts.push("cur");
+      const cl = parts.join(" ");
+      if (cl !== cls) { if (buf) out += cls ? `<span class="${cls}">${buf}</span>` : buf; buf = ""; cls = cl; }
+      buf += esc(ch);
+    }
+    if (buf) out += cls ? `<span class="${cls}">${buf}</span>` : buf;
+    html += (rowCls ? `<span class="${rowCls}">${out}</span>` : out) + (r < 23 ? "\n" : "");
+  });
+  $("screen").innerHTML = html;
+}
+
+function updatePanel() {
+  const s = STEPS[idx], v = s[mode];
+  $("chapter").textContent = s.chapter;
+  $("count").textContent = `Step ${idx + 1} / ${STEPS.length}`;
+  $("caption").textContent = s.caption;
+  const note = mode === "ispf" ? s.note_ispf : s.note_cics;
+  $("note").hidden = !note;
+  $("note").innerHTML = note ? `<b>${mode.toUpperCase()}</b>` : "";
+  if (note) $("note").append(document.createTextNode(note));
+  $("panel-id").textContent = v.panel;
+  $("mode-label").textContent = mode === "ispf" ? "TSO / ISPF · 3270 model 2" : "CICS · BMS map · 3270 model 2";
+  $("key").textContent = v.key || "—";
+  $("back").disabled = idx === 0;
+  $("next").disabled = idx === STEPS.length - 1;
+  $("play").textContent = playing ? "❚❚ Pause" : (idx === STEPS.length - 1 ? "↺ Replay" : "▶ Play");
+  document.querySelectorAll("#ticks button").forEach((b, i) => {
+    b.classList.toggle("now", i === idx); b.classList.toggle("done", i < idx);
+    b.setAttribute("aria-current", i === idx ? "step" : "false");
+  });
+  document.querySelectorAll("#chapters button").forEach((b) => b.classList.toggle("on", b.dataset.ch === s.chapter));
+}
+
+function pressKey() {
+  const k = $("key"); k.classList.add("press"); later(() => k.classList.remove("press"), 260);
+}
+
+function show(i, animate) {
+  clearTimers();
+  idx = Math.max(0, Math.min(STEPS.length - 1, i));
+  updatePanel();
+  const s = STEPS[idx];
+  const n = typedCells(s[mode].marks).length;
+  if (!animate || reduce) {
+    render(s, n, true, false);
+    if (playing) later(advance, dwell(s));
+    return;
+  }
+  render(s, 0, false, false);
+  let t = 450;
+  for (let k = 1; k <= n; k++) { const kk = k; later(() => render(s, kk, false, false), t); t += 55; }
+  later(() => render(s, n, true, true), t + 150);
+  if (playing) later(() => { pressKey(); later(advance, 420); }, t + dwell(s));
+}
+
+function dwell(s) { return Math.max(3200, s.caption.length * 38); }
+function advance() {
+  if (idx >= STEPS.length - 1) { playing = false; updatePanel(); return; }
+  show(idx + 1, true);
+}
+
+function setMode(m) {
+  mode = m;
+  try { localStorage.setItem("ucfms-mode", m); } catch (e) {}
+  $("m-ispf").setAttribute("aria-pressed", m === "ispf");
+  $("m-cics").setAttribute("aria-pressed", m === "cics");
+  show(idx, false);
+}
+
+function buildTimeline() {
+  const chapters = [];
+  STEPS.forEach((s, i) => { if (!chapters.length || chapters[chapters.length - 1].ch !== s.chapter) chapters.push({ ch: s.chapter, i }); });
+  chapters.forEach(({ ch, i }) => {
+    const b = document.createElement("button"); b.textContent = ch; b.dataset.ch = ch;
+    b.addEventListener("click", () => { playing = false; show(i, true); });
+    $("chapters").append(b);
+  });
+  STEPS.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.setAttribute("aria-label", `Step ${i + 1}: ${s.chapter}`);
+    if (i > 0 && STEPS[i - 1].chapter !== s.chapter) b.classList.add("gap");
+    b.addEventListener("click", () => { playing = false; show(i, false); });
+    $("ticks").append(b);
+  });
+}
+
+$("next").addEventListener("click", () => { playing = false; show(idx + 1, true); });
+$("back").addEventListener("click", () => { playing = false; show(idx - 1, false); });
+$("play").addEventListener("click", () => {
+  if (playing) { playing = false; clearTimers(); show(idx, false); return; }
+  playing = true;
+  if (idx === STEPS.length - 1) show(0, true); else show(idx, true);
+});
+$("m-ispf").addEventListener("click", () => setMode("ispf"));
+$("m-cics").addEventListener("click", () => setMode("cics"));
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest && e.target.closest("button") && (e.key === " " || e.key === "Enter")) return;
+  if (e.key === "ArrowRight") { playing = false; show(idx + 1, true); }
+  else if (e.key === "ArrowLeft") { playing = false; show(idx - 1, false); }
+  else if (e.key === " ") { e.preventDefault(); $("play").click(); }
+});
+
+buildTimeline();
+setMode(mode);
+</script>
