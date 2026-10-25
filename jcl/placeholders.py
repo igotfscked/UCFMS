@@ -25,6 +25,7 @@ TOKENS = [
     ("UCF.PROD (HLQ)", r"SET HLQ=UCF\.PROD\b", "High-level qualifier for every UCFMS dataset"),
     ("UCF.TAPE.INPUT", r"UCF\.TAPE\.INPUT", "Dataset name on the Comptroller tape"),
     ("UCF001", r"VOLSER=UCF001", "Tape volume serial"),
+    ("UCF.NUMI.UPLOAD.*", r"UCF\.NUMI\.UPLOAD\.", "NUMIDENT files uploaded from the PC (death, claim, SS-5)"),
     ("UNIT=TAPE", r"UNIT=TAPE\b", "Tape unit name"),
     ("LABEL=(1,SL)", r"LABEL=\(1,SL\)", "Tape label type and file sequence"),
     ("UNIT=SYSDA", r"UNIT=SYSDA\b", "Disk unit name for work and new datasets"),
@@ -36,7 +37,7 @@ TOKENS = [
     ("DATACLAS(XXXXXXXX)", r"DATACLAS\(XXXXXXXX\)", "SMS data class (commented out; needed over 4 GB)"),
     ("STORCLAS(XXXXXXXX)", r"STORCLAS\(XXXXXXXX\)", "SMS storage class (commented out)"),
     ("LOG(UNDO)", r"LOG\(UNDO\)", "CICS recovery attribute (commented out; or RECOVERY on the CICS FILE)"),
-    ("CYLINDERS / TRACKS", r"(CYLINDERS|TRACKS)\(\d+ \d+\)", "VSAM primary/secondary space, sized for about 10 million owner records"),
+    ("CYLINDERS / TRACKS", r"(CYLINDERS|TRACKS)\(\d+ \d+\)", "VSAM primary/secondary space, sized for about 10 million owner records (NUMIDENT: about 20 million)"),
     ("SPACE=(CYL,...)", r"SPACE=\((CYL|TRK),", "Work and sequential dataset space"),
     ("*** DESIGNEE ... ***", r"\*\*\* [^*]+ \*\*\*", "PARMLIB(DESIGNEE) values: your firm as printed on forms 53-125/53-126"),
 ]

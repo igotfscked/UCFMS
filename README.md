@@ -36,13 +36,14 @@ The project has two tracks:
 | [LAYOUT.md](LAYOUT.md) | The 27-field, 469-byte tape record layout |
 | [PROPERTY_TYPES.md](PROPERTY_TYPES.md) | Property type codes and descriptions |
 | [VALIDATION.md](VALIDATION.md) | How the layout was checked against real sample records |
+| [NUMIDENT.md](NUMIDENT.md) | Optional SSA NUMIDENT death, claim and SS-5 records (NARA public use files, via [SortedByName.com](https://sortedbyname.com/sources/numident.html)) as a reference dataset matched to owners. Data not included |
 | [ucfms/](ucfms/) | Python search prototype (parser, SQLite loader, CLI, web UI) |
-| [tests/](tests/) | Unit tests for the prototype and the Soundex routine |
+| [tests/](tests/) | Unit tests for the prototype, NUMIDENT and the Soundex routine |
 | [sample/](sample/) | A synthetic 1,000-record file in the tape layout (fake names) and a screenshot of the prototype. Real Comptroller records are not included; tests that use them skip when they're absent |
 | [jcl/](jcl/) | z/OS JCL: VSAM definitions, tape load, lookup files, compiles. Run order in [jcl/README.md](jcl/README.md); site values to fill in are in [jcl/PLACEHOLDERS.md](jcl/PLACEHOLDERS.md). The first ESDS define and load jobs are kept in [jcl/original/](jcl/original/) |
 | [cobol/](cobol/) | Batch COBOL: Soundex routine and builder, control-file stamper |
 | [design/](design/) | Application design ([APP_DESIGN.md](design/APP_DESIGN.md)), screen mockups ([SCREENS.md](design/SCREENS.md)), claims file layout ([CLAIMS_LAYOUT.md](design/CLAIMS_LAYOUT.md)) |
-| [design/copybooks/](design/copybooks/) | COBOL copybooks for the claims and control files |
+| [design/copybooks/](design/copybooks/) | COBOL copybooks for the claims, control and NUMIDENT files |
 | [design/forms/](design/forms/) | Comptroller forms 53-120, 53-125, 53-126 and the Affidavit of Heirship 53-111-A, the FDF field map ([FORMS.md](design/forms/FORMS.md)), sample FDFs and filled PDFs |
 | [design/print/](design/print/) | Sample 133-byte claim print package |
 | [design/walkthrough/](design/walkthrough/) | Generator for the interactive design walkthrough page |
