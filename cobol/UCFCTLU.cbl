@@ -11,7 +11,8 @@
       *   CT-LAST-UPD-USER 'BATCH'                               *
       *   CT-DATA          DSN X(44) DATE 9(8) TIME 9(6) X(8)    *
       * RECORD IDS USED: LOADSTAT (OWNER LOAD), HOLDSTAT, ZIPSTAT,*
-      * SNDXSTAT (LOOKUP BUILDS). CLAIMNO IS NEVER TOUCHED HERE. *
+      * SNDXSTAT (LOOKUP BUILDS), NUMISTAT (NUMIDENT LOAD).      *
+      * CLAIMNO IS NEVER TOUCHED HERE.                           *
       * THE CICS FILE MUST BE CLOSED WHILE THIS RUNS.            *
       * RETURN CODE 0 OK, 8 BAD PARM, 12 FILE ERROR.             *
       *----------------------------------------------------------*

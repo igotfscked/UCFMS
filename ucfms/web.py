@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import db
+from . import db, numident
 
 PAGE = (Path(__file__).parent / "index.html").read_text(encoding="utf-8")
 
@@ -60,7 +60,21 @@ def make_handler(db_path):
                 if url.path == "/api/meta":
                     n = con.execute("SELECT COUNT(*) FROM records").fetchone()[0]
                     return self._send(200, json.dumps(
-                        {"records": n, "property_types": db.property_types(con)}))
+                        {"records": n, "property_types": db.property_types(con),
+                         "numident": numident.count(con)}))
+                if url.path == "/api/numident/search":
+                    total, rows = numident.search(
+                        con, {k: q.get(k) for k in numident.SEARCH_FIELDS},
+                        limit=min(int(q.get("limit", 50)), 500), offset=int(q.get("offset", 0)))
+                    return self._send(200, json.dumps({"total": total, "rows": rows}))
+                if url.path == "/api/numident/match":
+                    rec = db.get_record(con, int(q["id"]))
+                    if not rec:
+                        return self._send(404, json.dumps({"error": "no such record"}))
+                    cands = numident.match_owner(con, rec, sounds_like=q.get("sounds_like") == "1")
+                    return self._send(200, json.dumps({"candidates": cands}))
+                if url.path == "/api/numident/person":
+                    return self._send(200, json.dumps({"records": numident.person(con, q["ssn"])}))
                 return self._send(404, json.dumps({"error": "not found"}))
             except ValueError as e:
                 return self._send(400, json.dumps({"error": str(e)}))

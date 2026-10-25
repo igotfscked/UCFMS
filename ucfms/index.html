@@ -31,9 +31,13 @@
   td.num { text-align:right; font-variant-numeric: tabular-nums; }
   tr:hover td { background:color-mix(in srgb, var(--accent) 8%, transparent); cursor:pointer; }
   .err { color:#c0392b; }
-  dialog { border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--text); max-width:700px; width:95%; }
+  dialog { border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--text); max-width:1000px; width:95%; }
   dialog dl { display:grid; grid-template-columns:max-content 1fr; gap:3px 12px; margin:0; }
   dialog dt { color:var(--muted); }
+  details.numi { margin-top:18px; }
+  details.numi summary { cursor:pointer; font-weight:600; margin-bottom:8px; }
+  .why { color:var(--muted); font-size:12px; white-space:normal; min-width:240px; }
+  .note { color:var(--muted); font-size:12px; }
 </style>
 </head>
 <body>
@@ -64,8 +68,28 @@
   <div class="wrap"><table><thead><tr>
     <th>Owner</th><th>Address</th><th>City</th><th>ST</th><th>ZIP</th><th>Property type</th>
     <th>Amount</th><th>Shares</th><th>Holder</th><th>Year</th><th>NR flag</th></tr></thead><tbody id="rows"></tbody></table></div>
+  <details class="numi" id="numi" hidden>
+    <summary>NUMIDENT (SSA death, claim and SS-5 records)</summary>
+    <form id="nf">
+      <label>Last name (starts with)<input name="last"></label>
+      <label>First name (starts with)<input name="first"></label>
+      <label>Sounds like<select name="sounds_like"><option value="">No</option><option value="1">Yes (Soundex)</option></select></label>
+      <label>SSN<input name="ssn" inputmode="numeric" maxlength="11"></label>
+      <label>Birth year<input name="dob_year" inputmode="numeric" maxlength="4"></label>
+      <label>Death year<input name="dod_year" inputmode="numeric" maxlength="4"></label>
+      <label>Residence ZIP at death<input name="zip" inputmode="numeric"></label>
+      <label>Birth state/country code<input name="pob" maxlength="2" placeholder="e.g. TX"></label>
+      <label>Record type<select name="kind"><option value="">Any</option><option value="D">Death</option>
+        <option value="C">Claim</option><option value="S">SS-5</option></select></label>
+      <div class="actions"><button>Search NUMIDENT</button></div>
+    </form>
+    <div class="bar"><span id="ncount"></span></div>
+    <div class="wrap"><table><thead><tr><th>Type</th><th>SSN</th><th>Name</th><th>Born</th><th>Died</th>
+      <th>Birthplace</th><th>Father</th><th>Mother</th><th>Residence ZIP</th></tr></thead><tbody id="nrows"></tbody></table></div>
+  </details>
 </main>
-<dialog id="dlg"><dl id="detail"></dl><p><button onclick="dlg.close()">Close</button></p></dialog>
+<dialog id="dlg"><dl id="detail"></dl><div id="match"></div>
+  <p><button class="secondary" id="findnumi" hidden>Find in NUMIDENT</button> <button onclick="dlg.close()">Close</button></p></dialog>
 <script>
 const PAGE = 50; let offset = 0, total = 0;
 const f = document.getElementById('f'), $ = id => document.getElementById(id);
@@ -94,15 +118,41 @@ async function run() {
 f.onsubmit = e => { e.preventDefault(); offset = 0; run(); };
 $('prev').onclick = () => { offset = Math.max(0, offset - PAGE); run(); };
 $('next').onclick = () => { offset += PAGE; run(); };
+let current = null, numiLoaded = false;
+const KIND = {D:'Death', C:'Claim', S:'SS-5'};
+const nname = x => [x.first_name, x.middle_name, x.last_name, x.suffix].filter(Boolean).join(' ');
+$('nf').onsubmit = async e => {
+  e.preventDefault();
+  const p = new URLSearchParams();
+  for (const [k, v] of new FormData($('nf'))) if (v.trim()) p.set(k, v.trim());
+  const r = await fetch('/api/numident/search?' + p); const j = await r.json();
+  if (!r.ok) { $('ncount').innerHTML = `<span class="err">${esc(j.error)}</span>`; $('nrows').innerHTML = ''; return; }
+  $('ncount').textContent = j.total ? `${j.total.toLocaleString()} NUMIDENT records${j.total > j.rows.length ? ', first ' + j.rows.length + ' shown' : ''}` : 'No matching NUMIDENT records';
+  $('nrows').innerHTML = j.rows.map(x => `<tr><td>${KIND[x.kind]}</td><td>${esc(x.ssn)}</td><td>${esc(nname(x))}</td>
+    <td>${esc(x.dob)}</td><td>${esc(x.dod)}</td><td>${esc([x.pob_city, x.pob].filter(Boolean).join(', '))}</td>
+    <td>${esc(x.father)}</td><td>${esc(x.mother)}</td><td>${esc(x.zip_residence)}</td></tr>`).join('');
+};
+$('findnumi').onclick = async () => {
+  const j = await (await fetch('/api/numident/match?id=' + current)).json();
+  const c = j.candidates || [];
+  $('match').innerHTML = !c.length ? `<p class="note">${esc(j.error || 'No NUMIDENT candidates (business names and owners with no first name are not matched).')}</p>` :
+    `<p class="note">Possible NUMIDENT matches, best first. These are leads to check, not identifications.</p>
+    <div class="wrap"><table><thead><tr><th>Score</th><th>SSN</th><th>Name</th><th>Born</th><th>Died</th><th>Birthplace</th><th>Records</th><th>Why</th></tr></thead><tbody>` +
+    c.map(x => `<tr><td class="num">${x.score}</td><td>${esc(x.ssn)}</td><td>${esc(x.name)}</td><td>${esc(x.dob)}</td>
+      <td>${esc(x.dod)}</td><td>${esc(x.pob)}</td><td>${[...x.kinds].map(k => KIND[k]).join(', ')}</td>
+      <td class="why">${esc(x.why.join(', '))}</td></tr>`).join('') + '</tbody></table></div>';
+};
 $('rows').onclick = async e => {
   const tr = e.target.closest('tr'); if (!tr) return;
+  current = tr.dataset.id; $('match').innerHTML = ''; $('findnumi').hidden = !numiLoaded;
   const rec = await (await fetch('/api/record?id=' + tr.dataset.id)).json();
   $('detail').innerHTML = Object.entries(rec).filter(([k, v]) => v !== '' && v != null && !/_u$|zip5$/.test(k))
     .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
   $('dlg').showModal();
 };
 fetch('/api/meta').then(r => r.json()).then(m => {
-  $('meta').textContent = `${m.records.toLocaleString()} records loaded. Name filters match from the start of the name; "words" filters match whole words in any order.`;
+  numiLoaded = m.numident > 0; $('numi').hidden = !numiLoaded;
+  $('meta').textContent = `${m.records.toLocaleString()} records loaded${numiLoaded ? `, plus ${m.numident.toLocaleString()} NUMIDENT records` : ''}. Name filters match from the start of the name; "words" filters match whole words in any order.`;
   const sel = f.property_type;
   m.property_types.forEach(t => sel.add(new Option(`${t.code}  ${t.description}${t.in_data ? '' : ' (none loaded)'}`, t.code)));
 });

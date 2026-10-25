@@ -158,6 +158,32 @@ extra path that the rest of Query never depends on.
   owner-file load. In that case option 3 is refused with "Sounds-like search
   isn't available; use Starts with", and every other search works unchanged.
 
+### NUMIDENT lookup (optional)
+
+A second optional extra, built the same way as sounds-like: nothing else in
+Query depends on it. Full design in [../NUMIDENT.md](../NUMIDENT.md).
+
+- **File:** `HLQ.NUMI.KSDS` (SSA death, claim and SS-5 records from NARA's
+  public use files), keyed last name 20 + first name 15 + SSN + kind +
+  reference number, with an SSN alternate index. Loaded by UCFNDEF/UCFNLOAD,
+  stamped `NUMISTAT` in UCF.CTL. It is reference data and never updated online.
+- **From a record:** on Record Detail, `F9=NUMIDENT` browses the file on the
+  owner's last name (first 20 bytes) + first initial and lists candidates,
+  one per SSN, best first, with the reasons (name, middle initial, residence
+  ZIP at death matches the owner ZIP, born in Texas, death on file). These
+  are leads for the user to check, never an identification, and nothing is
+  written anywhere. Business names and owners with no first name are not matched.
+- **On its own:** criteria entry gets a NUMIDENT option (last name, first
+  name, SSN, birth or death year, ZIP at death) and a person view that lists
+  every record for one SSN through the SSN path.
+- **Claims:** for heir claims the candidate's date of death, parents and
+  place of birth help the Affidavit of Heirship and the death-certificate
+  step. The claim keeps no SSN, as before (section 4); a user who wants to
+  note a NUMIDENT match types it into the claim notes.
+- **If the file isn't there:** CICS file not defined/open, or ISPF DD not
+  allocated: `F9` and the NUMIDENT option say "NUMIDENT isn't loaded" and
+  everything else works unchanged. An owner reload doesn't make it stale.
+
 ## 4. Module 2: Claims (UCFCLM0 / UCFCSRV)
 
 The only module that changes data. Functions Jake named, plus the minimum

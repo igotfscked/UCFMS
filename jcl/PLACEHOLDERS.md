@@ -11,26 +11,27 @@ Most jobs set `HLQ` and `LOADLIB` once at the top (`// SET ...`), so those are o
 <!-- jcl-table:begin -->
 | Placeholder | Stands for | Where (file:line) |
 |---|---|---|
-| `(ACCT)` | Job card accounting information | UCFCLDEF.jcl:1, UCFCOMP.jcl:1, UCFDEF.jcl:1, UCFFIND.jcl:1, UCFFMDEF.jcl:1, UCFLOAD.jcl:1, UCFLOOK.jcl:1, UCFSDX.jcl:1 |
-| `'UCF ...' programmer name` | Job card programmer-name field | UCFCLDEF.jcl:1, UCFCOMP.jcl:1, UCFDEF.jcl:1, UCFFIND.jcl:1, UCFFMDEF.jcl:1, UCFLOAD.jcl:1, UCFLOOK.jcl:1, UCFSDX.jcl:1 |
-| `CLASS=A` | Job class | UCFCLDEF.jcl:1, UCFCOMP.jcl:1, UCFDEF.jcl:1, UCFFIND.jcl:1, UCFFMDEF.jcl:1, UCFLOAD.jcl:1, UCFLOOK.jcl:1, UCFSDX.jcl:1 |
-| `MSGCLASS=X` | Output class for job logs | UCFCLDEF.jcl:1, UCFCOMP.jcl:1, UCFDEF.jcl:1, UCFFIND.jcl:1, UCFFMDEF.jcl:1, UCFLOAD.jcl:1, UCFLOOK.jcl:1, UCFSDX.jcl:1 |
-| `UCF.PROD (HLQ)` | High-level qualifier for every UCFMS dataset | UCFCLDEF.jcl:34, UCFDEF.jcl:27, UCFFIND.jcl:13, UCFFMDEF.jcl:21, UCFLOAD.jcl:24, UCFLOOK.jcl:30, UCFSDX.jcl:19 |
+| `(ACCT)` | Job card accounting information | UCFCLDEF.jcl:1, UCFCOMP.jcl:1, UCFDEF.jcl:1, UCFFIND.jcl:1, UCFFMDEF.jcl:1, UCFLOAD.jcl:1, UCFLOOK.jcl:1, UCFNDEF.jcl:1, UCFNLOAD.jcl:1, UCFSDX.jcl:1 |
+| `'UCF ...' programmer name` | Job card programmer-name field | UCFCLDEF.jcl:1, UCFCOMP.jcl:1, UCFDEF.jcl:1, UCFFIND.jcl:1, UCFFMDEF.jcl:1, UCFLOAD.jcl:1, UCFLOOK.jcl:1, UCFNDEF.jcl:1, UCFNLOAD.jcl:1, UCFSDX.jcl:1 |
+| `CLASS=A` | Job class | UCFCLDEF.jcl:1, UCFCOMP.jcl:1, UCFDEF.jcl:1, UCFFIND.jcl:1, UCFFMDEF.jcl:1, UCFLOAD.jcl:1, UCFLOOK.jcl:1, UCFNDEF.jcl:1, UCFNLOAD.jcl:1, UCFSDX.jcl:1 |
+| `MSGCLASS=X` | Output class for job logs | UCFCLDEF.jcl:1, UCFCOMP.jcl:1, UCFDEF.jcl:1, UCFFIND.jcl:1, UCFFMDEF.jcl:1, UCFLOAD.jcl:1, UCFLOOK.jcl:1, UCFNDEF.jcl:1, UCFNLOAD.jcl:1, UCFSDX.jcl:1 |
+| `UCF.PROD (HLQ)` | High-level qualifier for every UCFMS dataset | UCFCLDEF.jcl:34, UCFDEF.jcl:27, UCFFIND.jcl:13, UCFFMDEF.jcl:21, UCFLOAD.jcl:24, UCFLOOK.jcl:30, UCFNDEF.jcl:32, UCFNLOAD.jcl:30, UCFSDX.jcl:19 |
 | `UCF.TAPE.INPUT` | Dataset name on the Comptroller tape | UCFLOAD.jcl:25 |
 | `UCF001` | Tape volume serial | UCFLOAD.jcl:26 |
+| `UCF.NUMI.UPLOAD.*` | NUMIDENT files uploaded from the PC (death, claim, SS-5) | UCFNLOAD.jcl:31, UCFNLOAD.jcl:32, UCFNLOAD.jcl:33 |
 | `UNIT=TAPE` | Tape unit name | UCFLOAD.jcl:37 |
 | `LABEL=(1,SL)` | Tape label type and file sequence | UCFLOAD.jcl:37 |
-| `UNIT=SYSDA` | Disk unit name for work and new datasets | UCFFMDEF.jcl:25, UCFFMDEF.jcl:28, UCFLOAD.jcl:31, UCFLOAD.jcl:42, UCFLOAD.jcl:56, UCFLOAD.jcl:57, UCFSDX.jcl:41 |
-| `UCF.PROD.LOADLIB` | Load library for UCFSNDX, UCFSDXB, UCFCTLU | UCFCOMP.jcl:15, UCFLOAD.jcl:27, UCFLOOK.jcl:31, UCFSDX.jcl:20 |
+| `UNIT=SYSDA` | Disk unit name for work and new datasets | UCFFMDEF.jcl:25, UCFFMDEF.jcl:28, UCFLOAD.jcl:31, UCFLOAD.jcl:42, UCFLOAD.jcl:56, UCFLOAD.jcl:57, UCFNLOAD.jcl:38, UCFNLOAD.jcl:47, UCFNLOAD.jcl:51, UCFNLOAD.jcl:76, UCFNLOAD.jcl:77, UCFSDX.jcl:41 |
+| `UCF.PROD.LOADLIB` | Load library for UCFSNDX, UCFSDXB, UCFCTLU | UCFCOMP.jcl:15, UCFLOAD.jcl:27, UCFLOOK.jcl:31, UCFNLOAD.jcl:34, UCFSDX.jcl:20 |
 | `UCF.PROD.SOURCE` | COBOL source library | UCFCOMP.jcl:13 |
 | `UCF.PROD.COPYLIB` | COBOL copybook library | UCFCOMP.jcl:14 |
 | `CEE.SCEELKED` | Language Environment link library | UCFCOMP.jcl:16 |
 | `IGYWCL` | COBOL compile-and-link procedure | UCFCOMP.jcl:9, UCFCOMP.jcl:18, UCFCOMP.jcl:22, UCFCOMP.jcl:28 |
-| `DATACLAS(XXXXXXXX)` | SMS data class (commented out; needed over 4 GB) | UCFCLDEF.jcl:44, UCFCLDEF.jcl:55, UCFCLDEF.jcl:66, UCFDEF.jcl:43, UCFDEF.jcl:64, UCFLOOK.jcl:43, UCFLOOK.jcl:52, UCFSDX.jcl:31 |
+| `DATACLAS(XXXXXXXX)` | SMS data class (commented out; needed over 4 GB) | UCFCLDEF.jcl:44, UCFCLDEF.jcl:55, UCFCLDEF.jcl:66, UCFDEF.jcl:43, UCFDEF.jcl:64, UCFLOOK.jcl:43, UCFLOOK.jcl:52, UCFNDEF.jcl:48, UCFNDEF.jcl:68, UCFSDX.jcl:31 |
 | `STORCLAS(XXXXXXXX)` | SMS storage class (commented out) | UCFDEF.jcl:44 |
 | `LOG(UNDO)` | CICS recovery attribute (commented out; or RECOVERY on the CICS FILE) | UCFCLDEF.jcl:29, UCFCLDEF.jcl:43, UCFCLDEF.jcl:54, UCFCLDEF.jcl:65, UCFCLDEF.jcl:75 |
-| `CYLINDERS / TRACKS` | VSAM primary/secondary space, sized for about 10 million owner records | UCFCLDEF.jcl:47, UCFCLDEF.jcl:58, UCFCLDEF.jcl:69, UCFCLDEF.jcl:78, UCFCLDEF.jcl:87, UCFCLDEF.jcl:98, UCFCLDEF.jcl:110, UCFDEF.jcl:48, UCFDEF.jcl:68, UCFLOOK.jcl:46, UCFLOOK.jcl:55, UCFSDX.jcl:34 |
-| `SPACE=(CYL,...)` | Work and sequential dataset space | UCFFMDEF.jcl:25, UCFFMDEF.jcl:28, UCFLOAD.jcl:31, UCFLOAD.jcl:43, UCFLOAD.jcl:56, UCFLOAD.jcl:57, UCFSDX.jcl:42 |
+| `CYLINDERS / TRACKS` | VSAM primary/secondary space, sized for about 10 million owner records (NUMIDENT: about 20 million) | UCFCLDEF.jcl:47, UCFCLDEF.jcl:58, UCFCLDEF.jcl:69, UCFCLDEF.jcl:78, UCFCLDEF.jcl:87, UCFCLDEF.jcl:98, UCFCLDEF.jcl:110, UCFDEF.jcl:48, UCFDEF.jcl:68, UCFLOOK.jcl:46, UCFLOOK.jcl:55, UCFNDEF.jcl:52, UCFNDEF.jcl:72, UCFSDX.jcl:34 |
+| `SPACE=(CYL,...)` | Work and sequential dataset space | UCFFMDEF.jcl:25, UCFFMDEF.jcl:28, UCFLOAD.jcl:31, UCFLOAD.jcl:43, UCFLOAD.jcl:56, UCFLOAD.jcl:57, UCFNLOAD.jcl:38, UCFNLOAD.jcl:47, UCFNLOAD.jcl:52, UCFNLOAD.jcl:76, UCFNLOAD.jcl:77, UCFSDX.jcl:42 |
 | `*** DESIGNEE ... ***` | PARMLIB(DESIGNEE) values: your firm as printed on forms 53-125/53-126 | UCFFMDEF.jcl:38, UCFFMDEF.jcl:39, UCFFMDEF.jcl:40, UCFFMDEF.jcl:41, UCFFMDEF.jcl:42, UCFFMDEF.jcl:43, UCFFMDEF.jcl:44, UCFFMDEF.jcl:45 |
 <!-- jcl-table:end -->
 
@@ -41,6 +42,7 @@ Dataset names built from the HLQ (they change automatically with it):
 | `HLQ.OWNER.KSDS`, `.PROPID.AIX`, `.PROPID.PATH`, `.DUPKEYS` | UCFDEF, UCFLOAD |
 | `HLQ.OWNER.HOLDLKP`, `HLQ.OWNER.ZIPLKP` | UCFLOOK |
 | `HLQ.OWNER.SNDXLKP` (Soundex lookup, optional) | UCFSDX |
+| `HLQ.NUMI.KSDS`, `.SSN.AIX`, `.SSN.PATH`, `.DUPKEYS` (NUMIDENT, optional) | UCFNDEF, UCFNLOAD |
 | `HLQ.CLAIM.HDR`, `.HDR.BYUSER(.PATH)`, `.HDR.BYSTAT(.PATH)`, `HLQ.CLAIM.ITEM`, `.ITEM.BYPROP(.PATH)`, `HLQ.CLAIM.AUDIT`, `HLQ.UCF.CTL` | UCFCLDEF |
 | `HLQ.UCF.FORMS` (PDSE, VB 255, one FDF member per claim), `HLQ.UCF.PARMLIB` (PDSE, FB 80, member DESIGNEE) | UCFFMDEF |
 
@@ -60,6 +62,7 @@ Merged from [../design/PLACEHOLDERS_APP.md](../design/PLACEHOLDERS_APP.md), whic
 | `UCF` (NEWAPPL), ISPF panel, skeleton, table and message libraries, load library | APP_DESIGN.md section 7 | TSO/ISPF start-up allocations. The load library should be the same one as `UCF.PROD.LOADLIB` above, since Query calls UCFSNDX |
 | `JSMITH` | SCREENS.md | Sample user ID on mockups only |
 | 500 | APP_DESIGN.md section 3 | Cap on sounds-like matches without a narrowing filter |
+| `UCFNUMI` | NUMIDENT.md | CICS FILE resource name for `HLQ.NUMI.KSDS` (and one for `HLQ.NUMI.SSN.PATH`) |
 | Soundex lookup file name | APP_DESIGN.md section 3 | Now chosen: `HLQ.OWNER.SNDXLKP` |
 | SYSOUT class, `DEST`, `FORMS`, `PAGEDEF`/`FORMDEF` for the page printer; Infoprint printer definition for PDF | APP_DESIGN.md section 5 (printing) | Where claim packages print and how PDFs are made |
 | `HLQ.UCF.PARMLIB(DESIGNEE)` values: designee person, firm, address, phone, fax, PI license no., sales taxpayer no. | forms/FORMS.md; seeded by UCFFMDEF.jcl as `*** ... ***` (listed in the JCL table above) | Your firm as printed on forms 53-125/53-126 |
