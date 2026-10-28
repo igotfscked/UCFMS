@@ -39,6 +39,7 @@ The project has two tracks:
 | [ucfms/](ucfms/) | Python search prototype (parser, SQLite loader, CLI, web UI) |
 | [tests/](tests/) | Unit tests for the prototype and the Soundex routine |
 | [sample/](sample/) | A synthetic 1,000-record file in the tape layout (fake names) and a screenshot of the prototype. Real Comptroller records are not included; tests that use them skip when they're absent |
+| [awk/](awk/) | `ucfnorm.awk`: normalizes a UCF data file to CSV, pipe, TSV or clean fixed-width records (see below) |
 | [jcl/](jcl/) | z/OS JCL: VSAM definitions, tape load, lookup files, compiles. Run order in [jcl/README.md](jcl/README.md); site values to fill in are in [jcl/PLACEHOLDERS.md](jcl/PLACEHOLDERS.md). The first ESDS define and load jobs are kept in [jcl/original/](jcl/original/) |
 | [cobol/](cobol/) | Batch COBOL: Soundex routine and builder, control-file stamper |
 | [design/](design/) | Application design ([APP_DESIGN.md](design/APP_DESIGN.md)), screen mockups ([SCREENS.md](design/SCREENS.md)), claims file layout ([CLAIMS_LAYOUT.md](design/CLAIMS_LAYOUT.md)) |
@@ -106,6 +107,36 @@ python3 -m ucfms sample sample/ucf_sample.txt -n 1000   # synthetic, fake data
 
 Measured on 500,000 synthetic records: load 15 s, DB 270 MB, searches
 40–250 ms including Python start-up.
+
+## Normalizing UCF files with awk
+
+[awk/ucfnorm.awk](awk/ucfnorm.awk) reads the 469-byte records in
+[LAYOUT.md](LAYOUT.md) and writes them out clean: fields trimmed, inner blanks
+collapsed, DollarAmount as dollars and cents (`0000006270` becomes `62.70`),
+shares without leading zeros, dates as `YYYY-MM-DD`, and 9-digit ZIPs as
+`78701-1234`. It checks each record's length, NRFlag, numbers and dates and
+reports problems on stderr with the line number. POSIX awk, mawk, gawk and
+busybox awk all work; run it under `LC_ALL=C` so lengths are in bytes.
+
+```sh
+LC_ALL=C awk -f awk/ucfnorm.awk ucf_file.txt > ucf.csv                 # CSV with a header
+LC_ALL=C awk -f awk/ucfnorm.awk -v fmt=pipe -v propid=1 ucf_file.txt   # pipe-delimited + PropertyID
+LC_ALL=C awk -f awk/ucfnorm.awk -v fmt=fixed -v strict=1 in.txt > clean.txt  # clean 469-byte records
+```
+
+| Variable | Values (default first) |
+|---|---|
+| `fmt` | `csv`, `pipe`, `tsv`, `fixed` (the original layout, trimmed and re-padded, LF line ends) |
+| `header` | `1` writes a row of field names, `0` doesn't |
+| `dates` | `iso` (YYYY-MM-DD) or `mdy` (MM/DD/YYYY, as on the file) |
+| `dollars` | `dec` (62.70) or `raw` (0000006270) |
+| `zip` | `dash` (78701, 78701-1234) or `raw` |
+| `squeeze` | `1` collapses runs of blanks inside text fields, `0` keeps them |
+| `propid` | `0`, or `1` to add a PropertyID column (bytes 202-227) |
+| `strict` | `0` keeps records that fail a check (short ones padded), `1` drops them |
+| `stream` | `0`, or `1` for a file with no line breaks, cut into 469-byte records |
+
+Tests: `python3 -m unittest tests/test_ucfnorm.py -v`.
 
 ### Getting the real data
 
